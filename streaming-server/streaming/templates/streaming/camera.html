@@ -1,0 +1,59 @@
+{% extends "streaming/base.html" %}
+{% load static %}
+
+{% block content %}
+<section class="camera-page">
+    <div class="camera-heading">
+        <div>
+            <h2>Camera Stream</h2>
+            <p>Signed in as <strong>{{ username }}</strong></p>
+        </div>
+
+        <form method="post" action="{% url 'streaming:logout' %}">
+            {% csrf_token %}
+            <button type="submit" class="secondary-button">Sign Out</button>
+        </form>
+    </div>
+
+    <div class="video-frame">
+        <video id="cameraVideo" autoplay playsinline muted></video>
+        <div id="cameraPlaceholder" class="camera-placeholder">
+            Camera is off
+        </div>
+    </div>
+
+    <canvas id="snapshotCanvas" hidden></canvas>
+
+    <div class="controls">
+        <button id="startButton" type="button" class="primary-button">
+            Start Camera
+        </button>
+        <button id="switchButton" type="button" class="secondary-button" disabled>
+            Switch Camera
+        </button>
+        <button id="stopButton" type="button" class="danger-button" disabled>
+            Stop Camera
+        </button>
+    </div>
+
+    <div class="status-panel" aria-live="polite">
+        <span id="statusDot" class="status-dot"></span>
+        <span id="statusText">Camera stopped</span>
+    </div>
+
+    <p id="uploadStatus" class="upload-status">
+        Snapshots will upload every 3 seconds while streaming.
+    </p>
+
+    <input type="hidden" id="csrfToken" value="{{ csrf_token }}">
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    window.vectorCompareConfig = {
+        snapshotUrl: "{% url 'streaming:snapshot' %}"
+    };
+</script>
+<script src="{% static 'streaming/camera.js' %}"></script>
+{% endblock %}
