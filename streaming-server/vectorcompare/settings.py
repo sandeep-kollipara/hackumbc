@@ -70,3 +70,17 @@ CSRF_COOKIE_SAMESITE = "Lax"
 
 AWS_S3_BUCKET_NAME = os.getenv("AWS_S3_BUCKET_NAME", "")
 AWS_REGION = os.getenv("AWS_REGION", "us-east-1")
+
+CSRF_TRUSTED_ORIGINS = [
+    "https://vector.compare",
+]
+
+if not DEBUG:
+    SECURE_PROXY_SSL_HEADER = (
+        "HTTP_X_FORWARDED_PROTO",
+        "https",
+    )
+
+    SECURE_SSL_REDIRECT = True
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
