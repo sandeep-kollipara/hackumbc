@@ -1,0 +1,247 @@
+* {
+    box-sizing: border-box;
+}
+
+[hidden] { /* Added later due to a bug that prevents the camera feed from displaying on webpage */
+    display: none !important;
+}
+
+html, body {
+    margin: 0;
+    min-height: 100%;
+    font-family: "Times New Roman", Times, serif;
+    background: #ffffff;
+    color: #111111;
+}
+
+body {
+    min-height: 100vh;
+}
+
+button, input {
+    font: inherit;
+}
+
+.page-shell {
+    min-height: 100vh;
+    min-height: 100dvh;
+    display: flex;
+    flex-direction: column;
+}
+
+.site-header {
+    border-bottom: 1px solid #d8d8d8;
+    padding: 16px max(16px, env(safe-area-inset-right))
+             16px max(16px, env(safe-area-inset-left));
+    text-align: center;
+    background: #ffffff;
+}
+
+.site-header h1 {
+    margin: 0;
+    font-size: clamp(1.7rem, 5vw, 2.3rem);
+}
+
+.site-main {
+    flex: 1;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    padding: 24px 16px;
+}
+
+.site-footer {
+    border-top: 1px solid #d8d8d8;
+    padding: 16px;
+    text-align: center;
+    background: #ffffff;
+}
+
+.card,
+.camera-page {
+    width: min(100%, 900px);
+}
+
+.login-card {
+    align-self: center;
+    max-width: 430px;
+    border: 1px solid #d8d8d8;
+    border-radius: 10px;
+    padding: clamp(20px, 5vw, 32px);
+}
+
+.login-card h2,
+.camera-heading h2 {
+    margin-top: 0;
+}
+
+.login-form {
+    display: grid;
+    gap: 12px;
+}
+
+.login-form input {
+    width: 100%;
+    min-height: 48px;
+    border: 1px solid #888888;
+    border-radius: 6px;
+    padding: 10px 12px;
+    font-size: 1rem;
+}
+
+.camera-heading {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 16px;
+}
+
+.camera-heading p {
+    margin-bottom: 0;
+}
+
+.video-frame {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    max-height: 65vh;
+    background: #f1f1f1;
+    border: 1px solid #cccccc;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+#cameraVideo {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    background: #000000;
+}
+
+.camera-placeholder {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    background: #f4f4f4;
+    font-size: 1.2rem;
+}
+
+.controls {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 18px;
+}
+
+button {
+    min-height: 48px;
+    border-radius: 6px;
+    padding: 10px 22px;
+    cursor: pointer;
+}
+
+button:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+}
+
+.primary-button {
+    border: 1px solid #111111;
+    background: #111111;
+    color: #ffffff;
+}
+
+.secondary-button {
+    border: 1px solid #777777;
+    background: #ffffff;
+    color: #111111;
+}
+
+.danger-button {
+    border: 1px solid #555555;
+    background: #eeeeee;
+    color: #111111;
+}
+
+.status-panel {
+    margin-top: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.status-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #777777;
+}
+
+.status-dot.active {
+    background: #188038;
+}
+
+.status-dot.error {
+    background: #b3261e;
+}
+
+.upload-status {
+    text-align: center;
+    min-height: 1.3em;
+}
+
+.message.error {
+    border: 1px solid #b3261e;
+    padding: 10px;
+}
+
+@media (max-width: 600px) {
+    .site-main {
+        padding: 16px 10px;
+    }
+
+    .camera-heading {
+        align-items: flex-start;
+    }
+
+    .video-frame {
+        aspect-ratio: 3 / 4;
+        max-height: 62vh;
+    }
+
+    .controls {
+        display: grid;
+        grid-template-columns: 1fr;
+    }
+
+    .controls button,
+    .login-form button {
+        width: 100%;
+    }
+}
+
+@media (orientation: landscape) and (max-height: 600px) {
+    .site-main {
+        padding-top: 10px;
+        padding-bottom: 10px;
+    }
+
+    .video-frame {
+        aspect-ratio: 16 / 9;
+        max-height: 55vh;
+    }
+
+    .controls {
+        margin-top: 10px;
+    }
+
+    .site-header,
+    .site-footer {
+        padding-top: 8px;
+        padding-bottom: 8px;
+    }
+}
