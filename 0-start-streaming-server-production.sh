@@ -43,7 +43,14 @@ SERVICE_NAME="vectorcompare"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_PATH="$SCRIPT_DIR/$PROJECT_DIR"
 VENV_PATH="$SCRIPT_DIR/$VENV_DIR"
-STATIC_PATH="$PROJECT_PATH/staticfiles"
+
+#STATIC_PATH="$PROJECT_PATH/staticfiles"
+DJANGO_STATIC_PATH="$PROJECT_PATH/staticfiles"
+if [ "$MODE" = "production" ]; then
+    STATIC_PATH="/var/www/vectorcompare/static"
+else
+    STATIC_PATH="$DJANGO_STATIC_PATH"
+fi
 
 echo "============================================"
 echo " VectorCompare Production Setup"
@@ -69,7 +76,8 @@ sudo apt install -y \
     python3-pip \
     nginx \
     certbot \
-    python3-certbot-nginx
+    python3-certbot-nginx \
+    rsync
 
 
 # ============================================================
@@ -110,6 +118,19 @@ echo "Collecting static files..."
 
 python "$PROJECT_PATH/manage.py" collectstatic --noinput
 
+if [ "$MODE" = "production" ]; then
+    echo "Preparing production static files..."
+
+    sudo mkdir -p "$STATIC_PATH"
+
+    sudo rsync -a --delete \
+        "$DJANGO_STATIC_PATH/" \
+        "$STATIC_PATH/"
+
+    sudo chown -R www-data:www-data "$STATIC_PATH"
+    sudo find "$STATIC_PATH" -type d -exec chmod 755 {} \;
+    sudo find "$STATIC_PATH" -type f -exec chmod 644 {} \;
+fi
 
 # ============================================================
 # 5. Create Gunicorn systemd service
@@ -282,13 +303,47 @@ fi
 echo ""
 echo "Testing Django through Gunicorn..."
 
+#curl --fail --silent \
+#    --show-error \
+#    -H "Host: $DOMAIN" \
+#    "http://127.0.0.1:$NGINX_PORT/" \
+#    > /dev/null
+
+#echo "Django + Gunicorn + Nginx: OK"
+
+HTTP_STATUS=$(curl --silent \
+    --output /dev/null \
+    --write-out "%{http_code}" \
+    -H "Host: $DOMAIN" \
+    "http://127.0.0.1:$NGINX_PORT/")
+
+if [[ "$HTTP_STATUS" != "200" && \
+      "$HTTP_STATUS" != "301" && \
+      "$HTTP_STATUS" != "302" ]]; then
+
+    echo "ERROR: Django returned HTTP $HTTP_STATUS"
+    exit 1
+fi
+
+echo "Django + Gunicorn + Nginx: OK (HTTP $HTTP_STATUS)"
+
+
+echo ""
+echo "Testing static files through Nginx..."
+
 curl --fail --silent \
     --show-error \
     -H "Host: $DOMAIN" \
-    "http://127.0.0.1:$NGINX_PORT/" \
+    "http://127.0.0.1:$NGINX_PORT/static/streaming/camera.js" \
     > /dev/null
 
-echo "Django + Gunicorn + Nginx: OK"
+curl --fail --silent \
+    --show-error \
+    -H "Host: $DOMAIN" \
+    "http://127.0.0.1:$NGINX_PORT/static/streaming/style.css" \
+    > /dev/null
+
+echo "Static files: OK"
 
 
 # ============================================================
@@ -297,12 +352,12 @@ echo "Django + Gunicorn + Nginx: OK"
 
 echo "[8/9] Configuring HTTPS..."
 
-echo ""
-echo "Certbot will request a TLS certificate for:"
-echo "https://$DOMAIN"
-echo ""
-
 if [ "$ENABLE_HTTPS" = true ]; then
+
+    echo ""
+    echo "Certbot will request a TLS certificate for:"
+    echo "https://$DOMAIN"
+    echo ""
 
     echo "Configuring HTTPS..."
 
@@ -357,9 +412,23 @@ if [ "$ENABLE_HTTPS" = true ]; then
     echo "Checking HTTPS..."
 
     curl --fail --silent \
-    --show-error \
-    "https://$DOMAIN/" \
-    > /dev/null
+        --show-error \
+        "https://$DOMAIN/" \
+        > /dev/null
+
+    echo "Testing HTTPS static files..."
+
+    curl --fail --silent \
+        --show-error \
+        "https://$DOMAIN/static/streaming/camera.js" \
+        > /dev/null
+
+    curl --fail --silent \
+        --show-error \
+        "https://$DOMAIN/static/streaming/style.css" \
+        > /dev/null
+
+    echo "HTTPS site and static files: OK"
 
 else
 
@@ -367,10 +436,12 @@ else
     echo "Checking HTTP..."
 
     curl --fail --silent \
-    --show-error \
-    -H "Host: $DOMAIN" \
-    "http://127.0.0.1:$NGINX_PORT/" \
-    > /dev/null
+        --show-error \
+        -H "Host: $DOMAIN" \
+        "http://127.0.0.1:$NGINX_PORT/" \
+        > /dev/null
+
+    echo "HTTP site: OK"
 
 fi
 
