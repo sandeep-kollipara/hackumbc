@@ -1,0 +1,8 @@
+dash>=3,<4
+panel>=1.7,<2
+chromadb>=1.0,<2
+openai>=2,<3
+pydantic>=2.9,<3
+python-dotenv>=1,<2
+Pillow>=10,<13
+numpy>=1.26,<3

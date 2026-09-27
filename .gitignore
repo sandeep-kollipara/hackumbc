@@ -1,3 +1,6 @@
 .venv
 datasets
 stream-server/.env
+batch-enrichment/.env
+batch-enrichment/archive
+chatbot-viewer/archive
